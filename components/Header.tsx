@@ -6,6 +6,7 @@ import Image from 'next/image';
 const navItems = [
   { href: '/', label: 'Dashboard' },
   { href: '/clients', label: 'Clients' },
+  { href: '/bot-setup', label: 'Bot Setup' },
 ];
 
 export default function Header() {
