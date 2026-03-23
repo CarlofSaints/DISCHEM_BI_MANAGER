@@ -184,7 +184,11 @@ export default function BotSetupPage() {
 
         <div className="space-y-2">
           <p className="text-sm text-slate-600 leading-relaxed">
-            Type the full path to the <strong>dischem-bot</strong> folder on your PC into the box below.
+            In the <strong>same Command Prompt</strong> where you ran <code className="bg-slate-100 px-1 rounded text-xs">npm install</code> in Step 1b, run this:
+          </p>
+          <Code>cd</Code>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            It will print the full path to the dischem-bot folder. Copy it and paste it below.
           </p>
           <input
             className="input"
@@ -192,10 +196,6 @@ export default function BotSetupPage() {
             value={botPath}
             onChange={(e) => setBotPath(e.target.value)}
           />
-          <p className="text-xs text-slate-400">
-            Not sure of the path? Open File Explorer, navigate to the dischem-bot folder, then click
-            the address bar at the top — it will show the full path. Copy and paste it here.
-          </p>
         </div>
 
         <div className={`space-y-2 border-t border-gray-100 pt-4 ${!pathReady ? 'opacity-40 pointer-events-none' : ''}`}>
