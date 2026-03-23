@@ -1,17 +1,20 @@
 import { getLogs, getClients } from '@/lib/kv';
 import LogTable from '@/components/LogTable';
-import type { LogStatus } from '@/lib/types';
+import type { LogStatus, AnyLog } from '@/lib/types';
 
-function statsFromLogs(logs: Awaited<ReturnType<typeof getLogs>>) {
+function statsFromLogs(logs: AnyLog[]) {
+  // Only count bot runs in stats, not user events
+  const runLogs = logs.filter((l): l is import('@/lib/types').RunLog => l.logType !== 'event');
   const today = new Date().toISOString().slice(0, 10);
-  const todayLogs = logs.filter((l) => l.timestamp.startsWith(today));
+  const todayLogs = runLogs.filter((l) => l.timestamp.startsWith(today));
   const successToday = todayLogs.filter((l) => l.status === 'success' || l.status === 'size_warning');
   const successRate =
     todayLogs.length === 0 ? null : Math.round((successToday.length / todayLogs.length) * 100);
 
-  const lastRun = logs[0]?.timestamp
+  const lastRunLog = runLogs[0];
+  const lastRun = lastRunLog?.timestamp
     ? (() => {
-        const diff = Date.now() - new Date(logs[0].timestamp).getTime();
+        const diff = Date.now() - new Date(lastRunLog.timestamp).getTime();
         const mins = Math.floor(diff / 60_000);
         if (mins < 1) return 'Just now';
         if (mins < 60) return `${mins}m ago`;
@@ -19,7 +22,7 @@ function statsFromLogs(logs: Awaited<ReturnType<typeof getLogs>>) {
       })()
     : 'Never';
 
-  return { todayCount: todayLogs.length, successRate, lastRun };
+  return { todayCount: todayLogs.length, successRate, lastRun, lastRunClientName: lastRunLog?.clientName ?? '' };
 }
 
 const statusColour: Record<LogStatus, string> = {
@@ -33,13 +36,13 @@ const statusColour: Record<LogStatus, string> = {
 
 export default async function DashboardPage() {
   const [logs, clients] = await Promise.all([getLogs(100), getClients()]);
-  const { todayCount, successRate, lastRun } = statsFromLogs(logs);
+  const { todayCount, successRate, lastRun, lastRunClientName } = statsFromLogs(logs);
 
   const stats = [
     { label: 'Active Clients', value: clients.length, sub: 'configured' },
     { label: 'Runs Today', value: todayCount, sub: 'this calendar day' },
     { label: 'Success Rate', value: successRate === null ? '—' : `${successRate}%`, sub: 'today' },
-    { label: 'Last Run', value: lastRun, sub: logs[0]?.clientName ?? '' },
+    { label: 'Last Run', value: lastRun, sub: lastRunClientName },
   ];
 
   return (
@@ -66,7 +69,9 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">Client Status</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {clients.map((c) => {
-              const lastLog = logs.find((l) => l.clientId === c.id);
+              const lastLog = logs.find(
+                (l): l is import('@/lib/types').RunLog => l.logType !== 'event' && (l as import('@/lib/types').RunLog).clientId === c.id
+              );
               return (
                 <div key={c.id} className="border border-gray-100 rounded-lg p-4 flex items-center justify-between">
                   <div>

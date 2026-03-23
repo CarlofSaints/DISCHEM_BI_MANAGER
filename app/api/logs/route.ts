@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getLogs, addLog } from '@/lib/kv';
 import type { RunLog } from '@/lib/types';
+// Note: GET is intentionally public (bot polling). POST is bot-only (no UI auth).
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

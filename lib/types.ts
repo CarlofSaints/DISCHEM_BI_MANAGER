@@ -1,6 +1,8 @@
 export type ReportType = 'SALES' | 'STOCK';
 export type Frequency = 'daily' | 'weekly' | 'monthly';
 export type LogStatus = 'success' | 'error' | 'validation_fail' | 'retrying' | 'size_warning' | 'site_down';
+export type Channel = 'dischem' | 'clicks' | 'pnp';
+export type UserRole = 'admin' | 'user';
 
 export interface Schedule {
   id: string;
@@ -23,6 +25,7 @@ export interface Client {
   username: string;
   password: string;
   reportType: ReportType;
+  channel: Channel;
   bookmarkName: string;
   downloadDir: string;
   schedules: Schedule[];
@@ -34,8 +37,29 @@ export interface Client {
   updatedAt: string;
 }
 
+export interface AppUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: UserRole;
+  forcePasswordChange: boolean;
+  createdAt: string;
+  updatedAt: string;
+  firstLoginAt: string | null;
+}
+
+export interface SessionData {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  role: UserRole;
+  expiresAt: string;
+}
+
 export interface RunLog {
   id: string;
+  logType?: 'run';
   clientId: string;
   clientName: string;
   timestamp: string;
@@ -49,3 +73,24 @@ export interface RunLog {
   message: string;
   durationMs?: number;
 }
+
+export type UserEventAction =
+  | 'create_client'
+  | 'update_client'
+  | 'delete_client'
+  | 'create_user'
+  | 'update_user'
+  | 'delete_user';
+
+export interface UserEventLog {
+  id: string;
+  logType: 'event';
+  timestamp: string;
+  actor: string;
+  actorEmail: string;
+  action: UserEventAction;
+  target: string;
+  message: string;
+}
+
+export type AnyLog = RunLog | UserEventLog;

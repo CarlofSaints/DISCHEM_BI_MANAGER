@@ -1,9 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Client, Schedule, Frequency } from '@/lib/types';
+import type { Client, Schedule, Frequency, Channel } from '@/lib/types';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const CHANNELS: { value: Channel; label: string; disabled?: boolean }[] = [
+  { value: 'dischem', label: 'Dis-Chem' },
+  { value: 'clicks', label: 'Clicks (coming soon)', disabled: true },
+  { value: 'pnp', label: 'Pick n Pay (coming soon)', disabled: true },
+];
 
 function emptySchedule(): Schedule {
   return {
@@ -22,6 +28,7 @@ function defaultForm(client?: Client) {
     username: client?.username ?? '',
     password: client?.password ?? '',
     reportType: client?.reportType ?? 'SALES' as const,
+    channel: client?.channel ?? 'dischem' as Channel,
     bookmarkName: client?.bookmarkName ?? '',
     downloadDir: client?.downloadDir ?? '',
     schedules: client?.schedules ?? [emptySchedule()],
@@ -40,6 +47,7 @@ export default function ClientForm({ client }: { client?: Client }) {
   const [form, setForm] = useState(defaultForm(client));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   function setField<K extends keyof typeof form>(k: K, v: typeof form[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -77,6 +85,7 @@ export default function ClientForm({ client }: { client?: Client }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (r.status === 401) { router.push('/login'); return; }
       if (!r.ok) throw new Error(await r.text());
       router.push('/clients');
       router.refresh();
@@ -86,6 +95,11 @@ export default function ClientForm({ client }: { client?: Client }) {
       setSaving(false);
     }
   }
+
+  // Preview of file name
+  const previewName = form.name
+    ? `${form.name.toUpperCase()} ${form.channel.toUpperCase()} ${form.reportType} YYYY-MM-DD.xlsx`
+    : '';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
@@ -112,27 +126,53 @@ export default function ClientForm({ client }: { client?: Client }) {
           </label>
 
           <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-slate-600">Channel</span>
+            <select value={form.channel} onChange={(e) => setField('channel', e.target.value as Channel)}
+              className="input">
+              {CHANNELS.map((c) => (
+                <option key={c.value} value={c.value} disabled={c.disabled}>{c.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-slate-600">Bookmark Name</span>
             <input required value={form.bookmarkName} onChange={(e) => setField('bookmarkName', e.target.value)}
               className="input" placeholder="e.g. VITAL BOT" />
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-600">Username</span>
+            <span className="text-xs font-medium text-slate-600">Dis-Chem Username</span>
             <input required value={form.username} onChange={(e) => setField('username', e.target.value)}
               className="input" placeholder="Dis-Chem login username" />
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-600">Password</span>
-            <input type="password" required value={form.password} onChange={(e) => setField('password', e.target.value)}
-              className="input" placeholder="••••••••" />
+            <span className="text-xs font-medium text-slate-600">Dis-Chem Password</span>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={form.password}
+                onChange={(e) => setField('password', e.target.value)}
+                className="input pr-12"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs select-none"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </label>
 
           <label className="col-span-2 flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-600">Download Directory (local path on bot machine)</span>
+            <span className="text-xs font-medium text-slate-600">Export Save Path (folder on the bot machine)</span>
             <input required value={form.downloadDir} onChange={(e) => setField('downloadDir', e.target.value)}
               className="input" placeholder="C:\Reports\Vital" />
+            <span className="text-[11px] text-slate-400">Files will be saved as: {previewName || 'CLIENT CHANNEL SALES YYYY-MM-DD.xlsx'}</span>
           </label>
         </div>
       </section>
