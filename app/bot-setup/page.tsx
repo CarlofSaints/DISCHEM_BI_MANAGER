@@ -175,55 +175,53 @@ export default function BotSetupPage() {
         </div>
       </div>
 
-      {/* Step 2 — bot path */}
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
+      {/* Step 2 — enter path + download */}
+      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <StepBadge n={2} done={pathReady} />
-          <h2 className="font-semibold text-slate-800">Enter your bot folder path</h2>
+          <StepBadge n={2} done={downloaded} />
+          <h2 className="font-semibold text-slate-800">Enter your bot folder path and download the setup script</h2>
         </div>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          This is the full path to the <strong>dischem-bot</strong> folder on your PC.
-        </p>
-        <input
-          className="input"
-          placeholder="e.g.  C:\Users\Carl\dischem-bot"
-          value={botPath}
-          onChange={(e) => setBotPath(e.target.value)}
-        />
-        <p className="text-xs text-slate-400">
-          Tip: open File Explorer, navigate to the dischem-bot folder, then click the address bar at
-          the top — it will show the full path. Copy and paste it here.
-        </p>
+
+        <div className="space-y-2">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Type the full path to the <strong>dischem-bot</strong> folder on your PC into the box below.
+          </p>
+          <input
+            className="input"
+            placeholder="e.g.  C:\Users\Carl\dischem-bot"
+            value={botPath}
+            onChange={(e) => setBotPath(e.target.value)}
+          />
+          <p className="text-xs text-slate-400">
+            Not sure of the path? Open File Explorer, navigate to the dischem-bot folder, then click
+            the address bar at the top — it will show the full path. Copy and paste it here.
+          </p>
+        </div>
+
+        <div className={`space-y-2 border-t border-gray-100 pt-4 ${!pathReady ? 'opacity-40 pointer-events-none' : ''}`}>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Once you&apos;ve entered the path above, click below to download a setup script that is
+            customised for your folder. It will install PM2, start the bot, and configure it to
+            auto-start every time Windows boots — no open windows needed.
+          </p>
+          <button
+            onClick={downloadScript}
+            disabled={!pathReady}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
+          >
+            <span>↓</span>
+            <span>Download setup-dischem-bot.bat</span>
+          </button>
+          {downloaded && (
+            <p className="text-xs text-green-600 font-medium">✓ Downloaded — check your Downloads folder.</p>
+          )}
+        </div>
       </div>
 
-      {/* Step 3 — download */}
-      <div className={`bg-white rounded-xl shadow-sm p-6 space-y-3 ${!pathReady ? 'opacity-50 pointer-events-none' : ''}`}>
-        <div className="flex items-center gap-3">
-          <StepBadge n={3} done={downloaded} />
-          <h2 className="font-semibold text-slate-800">Download the setup script</h2>
-        </div>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          This creates a one-click <code className="bg-slate-100 px-1 rounded text-xs">.bat</code> file
-          customised for your bot folder. It will install PM2, start the bot, and configure it to
-          auto-start when Windows boots.
-        </p>
-        <button
-          onClick={downloadScript}
-          disabled={!pathReady}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
-        >
-          <span>↓</span>
-          <span>Download setup-dischem-bot.bat</span>
-        </button>
-        {downloaded && (
-          <p className="text-xs text-green-600 font-medium">✓ Downloaded — check your Downloads folder.</p>
-        )}
-      </div>
-
-      {/* Step 4 — run the script */}
+      {/* Step 3 — run the script */}
       <div className={`bg-white rounded-xl shadow-sm p-6 space-y-3 ${!downloaded ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="flex items-center gap-3">
-          <StepBadge n={4} done={confirmed} />
+          <StepBadge n={3} done={confirmed} />
           <h2 className="font-semibold text-slate-800">Run the script</h2>
         </div>
         <ol className="text-sm text-slate-600 space-y-2 list-none">
@@ -249,10 +247,10 @@ export default function BotSetupPage() {
         </label>
       </div>
 
-      {/* Step 5 — verify */}
+      {/* Step 4 — verify */}
       <div className={`bg-white rounded-xl shadow-sm p-6 space-y-3 ${!confirmed ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="flex items-center gap-3">
-          <StepBadge n={5} done={false} />
+          <StepBadge n={4} done={false} />
           <h2 className="font-semibold text-slate-800">Verify it&apos;s running</h2>
         </div>
         <p className="text-sm text-slate-600">
