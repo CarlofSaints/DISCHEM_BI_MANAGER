@@ -57,10 +57,39 @@ async function updateVercelEnv(key: string, value: string): Promise<void> {
 
 // ── Storage helpers ────────────────────────────────────────────────────────────
 
-function envRead<T>(envKey: string, fallback: T): T {
-  const raw = process.env[envKey];
-  if (!raw) return fallback;
-  try { return JSON.parse(raw) as T; } catch { return fallback; }
+// On Vercel, process.env is set at cold-start and doesn't update when we write
+// via the API. So reads must also go through the Vercel API to get the live value.
+async function envRead<T>(envKey: string, fallback: T): Promise<T> {
+  if (!process.env.VERCEL) {
+    const raw = process.env[envKey];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) as T; } catch { return fallback; }
+  }
+
+  const token = process.env.VERCEL_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (!token || !projectId) {
+    const raw = process.env[envKey];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) as T; } catch { return fallback; }
+  }
+
+  const teamId = process.env.VERCEL_TEAM_ID ?? '';
+  const qs = teamId ? `?teamId=${teamId}` : '';
+  try {
+    const res = await fetch(
+      `https://api.vercel.com/v10/projects/${projectId}/env${qs}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = await res.json() as { envs?: { key: string; value?: string }[] };
+    const found = data.envs?.find((e) => e.key === envKey);
+    if (!found?.value) return fallback;
+    return JSON.parse(found.value) as T;
+  } catch {
+    const raw = process.env[envKey];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) as T; } catch { return fallback; }
+  }
 }
 
 async function envWrite(envKey: string, value: unknown): Promise<void> {
@@ -111,7 +140,7 @@ function localSet(key: string, value: unknown) {
 // ── Clients ────────────────────────────────────────────────────────────────────
 
 export async function getClients(): Promise<Client[]> {
-  if (process.env.VERCEL) return envRead<Client[]>('DCHEM_CLIENTS_JSON', []);
+  if (process.env.VERCEL) return await envRead<Client[]>('DCHEM_CLIENTS_JSON', []);
   return localGet<Client[]>('dchem:clients', []);
 }
 
@@ -128,14 +157,14 @@ export async function getClient(id: string): Promise<Client | null> {
 
 export async function getLogs(limit = 100): Promise<AnyLog[]> {
   const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    ? await envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
     : localGet<AnyLog[]>('dchem:logs', []);
   return all.slice(0, limit);
 }
 
 export async function addLog(log: RunLog): Promise<void> {
   const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    ? await envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
     : localGet<AnyLog[]>('dchem:logs', []);
   const entry: RunLog = { ...log, logType: 'run' };
   all.unshift(entry);
@@ -145,7 +174,7 @@ export async function addLog(log: RunLog): Promise<void> {
 
 export async function addEventLog(event: import('./types').UserEventLog): Promise<void> {
   const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    ? await envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
     : localGet<AnyLog[]>('dchem:logs', []);
   all.unshift(event);
   if (all.length > MAX_LOGS) all.splice(MAX_LOGS);
@@ -155,7 +184,7 @@ export async function addEventLog(event: import('./types').UserEventLog): Promis
 // ── Triggers ───────────────────────────────────────────────────────────────────
 
 export async function getPendingTriggers(): Promise<string[]> {
-  if (process.env.VERCEL) return envRead<string[]>('DCHEM_TRIGGERS_JSON', []);
+  if (process.env.VERCEL) return await envRead<string[]>('DCHEM_TRIGGERS_JSON', []);
   return localGet<string[]>('dchem:triggers', []);
 }
 
@@ -176,7 +205,7 @@ export async function removeTrigger(clientId: string): Promise<void> {
 
 export async function getUsers(): Promise<AppUser[]> {
   const users = process.env.VERCEL
-    ? envRead<AppUser[]>('DCHEM_USERS_JSON', [])
+    ? await envRead<AppUser[]>('DCHEM_USERS_JSON', [])
     : localGet<AppUser[]>('dchem:users', []);
 
   if (users.length === 0) {
