@@ -287,6 +287,14 @@ export default function ClientForm({ client }: { client?: Client }) {
             </label>
           </div>
         )}
+
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-slate-600">Notification email address(es)</span>
+          <input type="text" value={form.notifyEmail}
+            onChange={(e) => setField('notifyEmail', e.target.value)}
+            className="input" placeholder="e.g. carl@outerjoin.co.za, client@example.com" />
+          <span className="text-[11px] text-slate-400">Separate multiple addresses with commas. Notified on export success, validation failures, file size anomalies, and site outages.</span>
+        </label>
       </section>
 
       {/* ── File Size Alert ── */}
@@ -310,12 +318,6 @@ export default function ClientForm({ client }: { client?: Client }) {
               className="input" placeholder="20" />
           </label>
 
-          <label className="col-span-2 flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-600">Alert email (CAM notified on anomalies)</span>
-            <input type="email" value={form.notifyEmail}
-              onChange={(e) => setField('notifyEmail', e.target.value)}
-              className="input" placeholder="cam@outerjoin.co.za" />
-          </label>
         </div>
       </section>
 
