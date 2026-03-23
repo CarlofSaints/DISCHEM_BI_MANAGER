@@ -1,74 +1,38 @@
 import type { Client, RunLog, AnyLog, AppUser } from './types';
 
-// Env vars are capped to avoid hitting Vercel's 64KB limit.
-// Sessions are stateless (encoded in the cookie itself) — no server-side storage needed.
 const MAX_LOGS = 150;
 
-// ── Vercel env var updater ─────────────────────────────────────────────────────
-// Requires VERCEL_TOKEN in env. VERCEL_PROJECT_ID + VERCEL_TEAM_ID are
-// automatically injected by Vercel at runtime.
+// ── Supabase client ────────────────────────────────────────────────────────────
 
-async function updateVercelEnv(key: string, value: string): Promise<void> {
-  const token = process.env.VERCEL_TOKEN;
-  const projectId = process.env.VERCEL_PROJECT_ID;
-  if (!token || !projectId) {
-    console.warn(`[kv] VERCEL_TOKEN or VERCEL_PROJECT_ID missing — cannot persist ${key}`);
-    return;
-  }
-
-  const teamId = process.env.VERCEL_TEAM_ID ?? '';
-  const qs = teamId ? `?teamId=${teamId}` : '';
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-
-  // Find existing env var ID
-  const listRes = await fetch(
-    `https://api.vercel.com/v10/projects/${projectId}/env${qs}`,
-    { headers }
-  );
-  const listData = await listRes.json() as { envs?: { id: string; key: string }[] };
-  const existing = listData.envs?.find((e) => e.key === key);
-
-  if (existing) {
-    // Update
-    await fetch(
-      `https://api.vercel.com/v10/projects/${projectId}/env/${existing.id}${qs}`,
-      { method: 'PATCH', headers, body: JSON.stringify({ value }) }
-    );
-  } else {
-    // Create
-    await fetch(
-      `https://api.vercel.com/v10/projects/${projectId}/env${qs}`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          key,
-          value,
-          type: 'plain',
-          target: ['production', 'preview', 'development'],
-        }),
-      }
-    );
-  }
+function getSupabase() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
+  // Dynamic import so Next.js doesn't complain at build time when env vars aren't present
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(url, key);
 }
 
-// ── Storage helpers ────────────────────────────────────────────────────────────
+// ── Read / write helpers ───────────────────────────────────────────────────────
 
-function envRead<T>(envKey: string, fallback: T): T {
-  const raw = process.env[envKey];
-  if (!raw) return fallback;
-  try { return JSON.parse(raw) as T; } catch { return fallback; }
+async function kvGet<T>(key: string, fallback: T): Promise<T> {
+  if (!process.env.SUPABASE_URL) return localGet<T>(key, fallback);
+  const sb = getSupabase();
+  const { data, error } = await sb
+    .from('dchem_kv')
+    .select('value')
+    .eq('key', key)
+    .single();
+  if (error || !data) return fallback;
+  return data.value as T;
 }
 
-async function envWrite(envKey: string, value: unknown): Promise<void> {
-  if (process.env.VERCEL) {
-    await updateVercelEnv(envKey, JSON.stringify(value));
-  } else {
-    localSet(envKey, value);
-  }
+async function kvSet(key: string, value: unknown): Promise<void> {
+  if (!process.env.SUPABASE_URL) { localSet(key, value); return; }
+  const sb = getSupabase();
+  await sb
+    .from('dchem_kv')
+    .upsert({ key, value, updated_at: new Date().toISOString() });
 }
 
 // ── Local JSON fallback (dev only) ────────────────────────────────────────────
@@ -111,12 +75,11 @@ function localSet(key: string, value: unknown) {
 // ── Clients ────────────────────────────────────────────────────────────────────
 
 export async function getClients(): Promise<Client[]> {
-  if (process.env.VERCEL) return envRead<Client[]>('DCHEM_CLIENTS_JSON', []);
-  return localGet<Client[]>('dchem:clients', []);
+  return kvGet<Client[]>('dchem:clients', []);
 }
 
 export async function saveClients(clients: Client[]): Promise<void> {
-  await envWrite('DCHEM_CLIENTS_JSON', clients);
+  await kvSet('dchem:clients', clients);
 }
 
 export async function getClient(id: string): Promise<Client | null> {
@@ -127,57 +90,48 @@ export async function getClient(id: string): Promise<Client | null> {
 // ── Logs ───────────────────────────────────────────────────────────────────────
 
 export async function getLogs(limit = 100): Promise<AnyLog[]> {
-  const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
-    : localGet<AnyLog[]>('dchem:logs', []);
+  const all = await kvGet<AnyLog[]>('dchem:logs', []);
   return all.slice(0, limit);
 }
 
 export async function addLog(log: RunLog): Promise<void> {
-  const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
-    : localGet<AnyLog[]>('dchem:logs', []);
+  const all = await kvGet<AnyLog[]>('dchem:logs', []);
   const entry: RunLog = { ...log, logType: 'run' };
   all.unshift(entry);
   if (all.length > MAX_LOGS) all.splice(MAX_LOGS);
-  await envWrite('DCHEM_LOGS_JSON', all);
+  await kvSet('dchem:logs', all);
 }
 
 export async function addEventLog(event: import('./types').UserEventLog): Promise<void> {
-  const all = process.env.VERCEL
-    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
-    : localGet<AnyLog[]>('dchem:logs', []);
+  const all = await kvGet<AnyLog[]>('dchem:logs', []);
   all.unshift(event);
   if (all.length > MAX_LOGS) all.splice(MAX_LOGS);
-  await envWrite('DCHEM_LOGS_JSON', all);
+  await kvSet('dchem:logs', all);
 }
 
 // ── Triggers ───────────────────────────────────────────────────────────────────
 
 export async function getPendingTriggers(): Promise<string[]> {
-  if (process.env.VERCEL) return envRead<string[]>('DCHEM_TRIGGERS_JSON', []);
-  return localGet<string[]>('dchem:triggers', []);
+  return kvGet<string[]>('dchem:triggers', []);
 }
 
 export async function addTrigger(clientId: string): Promise<void> {
   const triggers = await getPendingTriggers();
   if (!triggers.includes(clientId)) {
     triggers.push(clientId);
-    await envWrite('DCHEM_TRIGGERS_JSON', triggers);
+    await kvSet('dchem:triggers', triggers);
   }
 }
 
 export async function removeTrigger(clientId: string): Promise<void> {
   const triggers = await getPendingTriggers();
-  await envWrite('DCHEM_TRIGGERS_JSON', triggers.filter((id) => id !== clientId));
+  await kvSet('dchem:triggers', triggers.filter((id) => id !== clientId));
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────────
 
 export async function getUsers(): Promise<AppUser[]> {
-  const users = process.env.VERCEL
-    ? envRead<AppUser[]>('DCHEM_USERS_JSON', [])
-    : localGet<AppUser[]>('dchem:users', []);
+  const users = await kvGet<AppUser[]>('dchem:users', []);
 
   if (users.length === 0) {
     const bcrypt = await import('bcryptjs');
@@ -200,7 +154,7 @@ export async function getUsers(): Promise<AppUser[]> {
 }
 
 export async function saveUsers(users: AppUser[]): Promise<void> {
-  await envWrite('DCHEM_USERS_JSON', users);
+  await kvSet('dchem:users', users);
 }
 
 export async function getUser(id: string): Promise<AppUser | null> {
