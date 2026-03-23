@@ -4,7 +4,7 @@ import { requireApiAuth } from '@/lib/auth';
 import type { Client } from '@/lib/types';
 
 export async function GET(req: NextRequest) {
-  const auth = await requireApiAuth(req);
+  const auth = requireApiAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const clients = await getClients();
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireApiAuth(req);
+  const auth = requireApiAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const body = await req.json();

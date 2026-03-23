@@ -1,26 +1,78 @@
-import type { Client, RunLog, AnyLog, AppUser, SessionData } from './types';
+import type { Client, RunLog, AnyLog, AppUser } from './types';
 
-const MAX_LOGS = 500;
+// Env vars are capped to avoid hitting Vercel's 64KB limit.
+// Sessions are stateless (encoded in the cookie itself) — no server-side storage needed.
+const MAX_LOGS = 150;
 
-// ── Storage backend ────────────────────────────────────────────────────────────
-async function kvGet<T>(key: string): Promise<T | null> {
-  if (process.env.KV_REST_API_URL) {
-    const { kv } = await import('@vercel/kv');
-    return kv.get<T>(key);
-  }
-  return localGet<T>(key);
-}
+// ── Vercel env var updater ─────────────────────────────────────────────────────
+// Requires VERCEL_TOKEN in env. VERCEL_PROJECT_ID + VERCEL_TEAM_ID are
+// automatically injected by Vercel at runtime.
 
-async function kvSet(key: string, value: unknown): Promise<void> {
-  if (process.env.KV_REST_API_URL) {
-    const { kv } = await import('@vercel/kv');
-    await kv.set(key, value);
+async function updateVercelEnv(key: string, value: string): Promise<void> {
+  const token = process.env.VERCEL_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (!token || !projectId) {
+    console.warn(`[kv] VERCEL_TOKEN or VERCEL_PROJECT_ID missing — cannot persist ${key}`);
     return;
   }
-  localSet(key, value);
+
+  const teamId = process.env.VERCEL_TEAM_ID ?? '';
+  const qs = teamId ? `?teamId=${teamId}` : '';
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+
+  // Find existing env var ID
+  const listRes = await fetch(
+    `https://api.vercel.com/v10/projects/${projectId}/env${qs}`,
+    { headers }
+  );
+  const listData = await listRes.json() as { envs?: { id: string; key: string }[] };
+  const existing = listData.envs?.find((e) => e.key === key);
+
+  if (existing) {
+    // Update
+    await fetch(
+      `https://api.vercel.com/v10/projects/${projectId}/env/${existing.id}${qs}`,
+      { method: 'PATCH', headers, body: JSON.stringify({ value }) }
+    );
+  } else {
+    // Create
+    await fetch(
+      `https://api.vercel.com/v10/projects/${projectId}/env${qs}`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          key,
+          value,
+          type: 'plain',
+          target: ['production', 'preview', 'development'],
+        }),
+      }
+    );
+  }
 }
 
-// ── Local JSON fallback ────────────────────────────────────────────────────────
+// ── Storage helpers ────────────────────────────────────────────────────────────
+
+function envRead<T>(envKey: string, fallback: T): T {
+  const raw = process.env[envKey];
+  if (!raw) return fallback;
+  try { return JSON.parse(raw) as T; } catch { return fallback; }
+}
+
+async function envWrite(envKey: string, value: unknown): Promise<void> {
+  if (process.env.VERCEL) {
+    await updateVercelEnv(envKey, JSON.stringify(value));
+  } else {
+    localSet(envKey, value);
+  }
+}
+
+// ── Local JSON fallback (dev only) ────────────────────────────────────────────
+
 function localDbPath() {
   const path = require('path') as typeof import('path');
   return path.join(process.cwd(), 'data', 'db.json');
@@ -45,9 +97,9 @@ function writeLocalDb(db: Record<string, unknown>) {
   fs.writeFileSync(p, JSON.stringify(db, null, 2));
 }
 
-function localGet<T>(key: string): T | null {
+function localGet<T>(key: string, fallback: T): T {
   const db = readLocalDb();
-  return (db[key] ?? null) as T | null;
+  return (db[key] ?? fallback) as T;
 }
 
 function localSet(key: string, value: unknown) {
@@ -59,11 +111,12 @@ function localSet(key: string, value: unknown) {
 // ── Clients ────────────────────────────────────────────────────────────────────
 
 export async function getClients(): Promise<Client[]> {
-  return (await kvGet<Client[]>('dchem:clients')) ?? [];
+  if (process.env.VERCEL) return envRead<Client[]>('DCHEM_CLIENTS_JSON', []);
+  return localGet<Client[]>('dchem:clients', []);
 }
 
 export async function saveClients(clients: Client[]): Promise<void> {
-  await kvSet('dchem:clients', clients);
+  await envWrite('DCHEM_CLIENTS_JSON', clients);
 }
 
 export async function getClient(id: string): Promise<Client | null> {
@@ -71,53 +124,62 @@ export async function getClient(id: string): Promise<Client | null> {
   return clients.find((c) => c.id === id) ?? null;
 }
 
-// ── Logs (unified run + user event) ───────────────────────────────────────────
+// ── Logs ───────────────────────────────────────────────────────────────────────
 
 export async function getLogs(limit = 100): Promise<AnyLog[]> {
-  const all = (await kvGet<AnyLog[]>('dchem:logs')) ?? [];
+  const all = process.env.VERCEL
+    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    : localGet<AnyLog[]>('dchem:logs', []);
   return all.slice(0, limit);
 }
 
 export async function addLog(log: RunLog): Promise<void> {
+  const all = process.env.VERCEL
+    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    : localGet<AnyLog[]>('dchem:logs', []);
   const entry: RunLog = { ...log, logType: 'run' };
-  const all = (await kvGet<AnyLog[]>('dchem:logs')) ?? [];
   all.unshift(entry);
   if (all.length > MAX_LOGS) all.splice(MAX_LOGS);
-  await kvSet('dchem:logs', all);
+  await envWrite('DCHEM_LOGS_JSON', all);
 }
 
 export async function addEventLog(event: import('./types').UserEventLog): Promise<void> {
-  const all = (await kvGet<AnyLog[]>('dchem:logs')) ?? [];
+  const all = process.env.VERCEL
+    ? envRead<AnyLog[]>('DCHEM_LOGS_JSON', [])
+    : localGet<AnyLog[]>('dchem:logs', []);
   all.unshift(event);
   if (all.length > MAX_LOGS) all.splice(MAX_LOGS);
-  await kvSet('dchem:logs', all);
+  await envWrite('DCHEM_LOGS_JSON', all);
 }
 
 // ── Triggers ───────────────────────────────────────────────────────────────────
 
 export async function getPendingTriggers(): Promise<string[]> {
-  return (await kvGet<string[]>('dchem:triggers')) ?? [];
+  if (process.env.VERCEL) return envRead<string[]>('DCHEM_TRIGGERS_JSON', []);
+  return localGet<string[]>('dchem:triggers', []);
 }
 
 export async function addTrigger(clientId: string): Promise<void> {
   const triggers = await getPendingTriggers();
   if (!triggers.includes(clientId)) {
     triggers.push(clientId);
-    await kvSet('dchem:triggers', triggers);
+    await envWrite('DCHEM_TRIGGERS_JSON', triggers);
   }
 }
 
 export async function removeTrigger(clientId: string): Promise<void> {
   const triggers = await getPendingTriggers();
-  await kvSet('dchem:triggers', triggers.filter((id) => id !== clientId));
+  await envWrite('DCHEM_TRIGGERS_JSON', triggers.filter((id) => id !== clientId));
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────────
 
 export async function getUsers(): Promise<AppUser[]> {
-  const users = (await kvGet<AppUser[]>('dchem:users')) ?? [];
+  const users = process.env.VERCEL
+    ? envRead<AppUser[]>('DCHEM_USERS_JSON', [])
+    : localGet<AppUser[]>('dchem:users', []);
+
   if (users.length === 0) {
-    // Seed default admin on first run
     const bcrypt = await import('bcryptjs');
     const hash = await bcrypt.hash('Admin2026', 10);
     const admin: AppUser = {
@@ -138,7 +200,7 @@ export async function getUsers(): Promise<AppUser[]> {
 }
 
 export async function saveUsers(users: AppUser[]): Promise<void> {
-  await kvSet('dchem:users', users);
+  await envWrite('DCHEM_USERS_JSON', users);
 }
 
 export async function getUser(id: string): Promise<AppUser | null> {
@@ -149,46 +211,4 @@ export async function getUser(id: string): Promise<AppUser | null> {
 export async function getUserByEmail(email: string): Promise<AppUser | null> {
   const users = await getUsers();
   return users.find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
-}
-
-// ── Sessions ───────────────────────────────────────────────────────────────────
-
-type SessionMap = Record<string, SessionData>;
-
-async function getSessions(): Promise<SessionMap> {
-  return (await kvGet<SessionMap>('dchem:sessions')) ?? {};
-}
-
-async function saveSessions(sessions: SessionMap): Promise<void> {
-  await kvSet('dchem:sessions', sessions);
-}
-
-export async function setSession(token: string, data: SessionData): Promise<void> {
-  const sessions = await getSessions();
-  // Prune expired sessions while we're here
-  const now = Date.now();
-  for (const [k, v] of Object.entries(sessions)) {
-    if (new Date(v.expiresAt).getTime() < now) delete sessions[k];
-  }
-  sessions[token] = data;
-  await saveSessions(sessions);
-}
-
-export async function getSession(token: string): Promise<SessionData | null> {
-  const sessions = await getSessions();
-  const session = sessions[token];
-  if (!session) return null;
-  if (new Date(session.expiresAt).getTime() < Date.now()) {
-    // Expired
-    delete sessions[token];
-    await saveSessions(sessions);
-    return null;
-  }
-  return session;
-}
-
-export async function deleteSession(token: string): Promise<void> {
-  const sessions = await getSessions();
-  delete sessions[token];
-  await saveSessions(sessions);
 }

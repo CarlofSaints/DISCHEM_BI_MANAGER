@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { logout, clearSessionCookie } from '@/lib/auth';
+import { clearSessionCookie } from '@/lib/auth';
 
-export async function POST(req: Request) {
-  await logout(req);
+export async function POST() {
+  // Stateless sessions — just clear the cookie, nothing to delete server-side
   const response = NextResponse.json({ ok: true });
   clearSessionCookie(response);
   return response;

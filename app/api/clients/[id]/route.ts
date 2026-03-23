@@ -3,7 +3,7 @@ import { getClients, saveClients, addEventLog } from '@/lib/kv';
 import { requireApiAuth } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAuth(req);
+  const auth = requireApiAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAuth(req);
+  const auth = requireApiAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
@@ -42,7 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAuth(req);
+  const auth = requireApiAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;

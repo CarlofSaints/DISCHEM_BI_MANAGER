@@ -6,7 +6,7 @@ import { sendWelcomeEmail } from '@/lib/email';
 import type { AppUser } from '@/lib/types';
 
 export async function GET(req: NextRequest) {
-  const auth = await requireApiAuth(req, true);
+  const auth = requireApiAuth(req, true);
   if (auth instanceof NextResponse) return auth;
 
   const users = await getUsers();
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireApiAuth(req, true);
+  const auth = requireApiAuth(req, true);
   if (auth instanceof NextResponse) return auth;
 
   const body = await req.json();

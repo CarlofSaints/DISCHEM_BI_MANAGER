@@ -3,7 +3,7 @@ import { getUsers, saveUsers, addEventLog } from '@/lib/kv';
 import { requireApiAuth, hashPassword } from '@/lib/auth';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAuth(req, true);
+  const auth = requireApiAuth(req, true);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAuth(req, true);
+  const auth = requireApiAuth(req, true);
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
