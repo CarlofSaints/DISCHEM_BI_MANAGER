@@ -50,7 +50,7 @@ export default function LogTable({ initialLogs }: { initialLogs: AnyLog[] }) {
         <button
           onClick={refresh}
           disabled={loading}
-          className="text-xs text-[#F97316] hover:underline disabled:opacity-40"
+          className="text-xs text-[#FC5424] hover:underline disabled:opacity-40"
         >
           {loading ? 'Refreshing…' : '↻ Refresh'}
         </button>

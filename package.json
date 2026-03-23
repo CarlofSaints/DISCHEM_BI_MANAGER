@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.3",
     "@vercel/kv": "^3.0.0",
     "bcryptjs": "^2.4.3",
     "next": "16.2.1",

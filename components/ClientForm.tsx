@@ -105,7 +105,7 @@ export default function ClientForm({ client }: { client?: Client }) {
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
       {/* ── Basic Info ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#F97316] pl-3">
+        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#FC5424] pl-3">
           Basic Info
         </h2>
 
@@ -180,11 +180,11 @@ export default function ClientForm({ client }: { client?: Client }) {
       {/* ── Schedules ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#F97316] pl-3">
+          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#FC5424] pl-3">
             Schedules
           </h2>
           <button type="button" onClick={addSchedule}
-            className="text-xs px-3 py-1.5 rounded-lg border border-[#F97316] text-[#F97316] hover:bg-orange-50 font-medium">
+            className="text-xs px-3 py-1.5 rounded-lg border border-[#FC5424] text-[#FC5424] hover:bg-orange-50 font-medium">
             + Add Schedule
           </button>
         </div>
@@ -246,7 +246,7 @@ export default function ClientForm({ client }: { client?: Client }) {
                               : [...(s.days ?? []), i];
                             updateSchedule(s.id, { days });
                           }}
-                          className="accent-[#F97316]" />
+                          className="accent-[#FC5424]" />
                         {d}
                       </label>
                     );
@@ -260,14 +260,14 @@ export default function ClientForm({ client }: { client?: Client }) {
 
       {/* ── Data Validation ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#F97316] pl-3">
+        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#FC5424] pl-3">
           Data Validation
         </h2>
 
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.validationEnabled}
             onChange={(e) => setField('validationEnabled', e.target.checked)}
-            className="w-4 h-4 accent-[#F97316]" />
+            className="w-4 h-4 accent-[#FC5424]" />
           <span className="text-sm text-slate-700">Enable date validation (check Excel data is from yesterday)</span>
         </label>
 
@@ -291,7 +291,7 @@ export default function ClientForm({ client }: { client?: Client }) {
 
       {/* ── File Size Alert ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#F97316] pl-3">
+        <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide border-l-4 border-[#FC5424] pl-3">
           File Size Alert
         </h2>
 
@@ -323,7 +323,7 @@ export default function ClientForm({ client }: { client?: Client }) {
 
       <div className="flex gap-3">
         <button type="submit" disabled={saving}
-          className="px-6 py-2 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+          className="px-6 py-2 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
           {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Client'}
         </button>
         <button type="button" onClick={() => router.back()}

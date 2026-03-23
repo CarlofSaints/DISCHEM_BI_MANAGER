@@ -61,7 +61,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-slate-800">Clients</h1>
         <Link href="/clients/new"
-          className="px-4 py-2 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg transition-colors">
+          className="px-4 py-2 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors">
           + Add Client
         </Link>
       </div>
@@ -79,7 +79,7 @@ export default function ClientsPage() {
         <div className="bg-white rounded-xl shadow-sm p-16 text-center">
           <p className="text-slate-400 text-sm mb-4">No clients yet.</p>
           <Link href="/clients/new"
-            className="px-4 py-2 bg-[#F97316] text-white text-sm font-semibold rounded-lg">
+            className="px-4 py-2 bg-[#FC5424] text-white text-sm font-semibold rounded-lg">
             Add your first client
           </Link>
         </div>
@@ -103,7 +103,7 @@ export default function ClientsPage() {
                     <p className="text-xs text-slate-400 mt-0.5">{c.username}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-xs px-2 py-0.5 rounded bg-orange-50 text-[#F97316] font-medium">
+                    <span className="text-xs px-2 py-0.5 rounded bg-orange-50 text-[#FC5424] font-medium">
                       {c.reportType}
                     </span>
                   </td>

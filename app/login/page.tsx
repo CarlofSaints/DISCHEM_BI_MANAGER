@@ -49,7 +49,7 @@ function LoginForm() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-[#F97316] px-6 py-4">
+          <div className="bg-[#FC5424] px-6 py-4">
             <h1 className="text-white font-bold text-lg">Dis-Chem BI Manager</h1>
             <p className="text-orange-100 text-xs mt-0.5">Sign in to your account</p>
           </div>
@@ -97,7 +97,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-[#F97316] hover:bg-[#EA6A0A] text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50"
+              className="w-full py-2.5 bg-[#FC5424] hover:bg-[#E34C20] text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50"
             >
               {loading ? 'Signing in…' : 'Sign In'}
             </button>

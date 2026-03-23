@@ -55,8 +55,8 @@ export default function Header() {
                 href={href}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-[#F97316] text-white'
-                    : 'text-slate-600 hover:bg-orange-50 hover:text-[#F97316]'
+                    ? 'bg-[#FC5424] text-white'
+                    : 'text-slate-600 hover:bg-orange-50 hover:text-[#FC5424]'
                 }`}
               >
                 {label}
@@ -68,8 +68,8 @@ export default function Header() {
               href="/admin/users"
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 pathname.startsWith('/admin')
-                  ? 'bg-[#F97316] text-white'
-                  : 'text-slate-600 hover:bg-orange-50 hover:text-[#F97316]'
+                  ? 'bg-[#FC5424] text-white'
+                  : 'text-slate-600 hover:bg-orange-50 hover:text-[#FC5424]'
               }`}
             >
               Users
@@ -84,7 +84,7 @@ export default function Header() {
               onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm text-slate-600 hover:bg-gray-100 transition-colors"
             >
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#F97316]/10 text-[#F97316] text-xs font-bold">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#FC5424]/10 text-[#FC5424] text-xs font-bold">
                 {user.name.charAt(0).toUpperCase()}
               </span>
               <span className="hidden sm:block max-w-[140px] truncate">{user.name}</span>
@@ -101,7 +101,7 @@ export default function Header() {
                     <p className="text-xs font-semibold text-slate-700 truncate">{user.name}</p>
                     <p className="text-xs text-slate-400 truncate">{user.email}</p>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-1 inline-block ${
-                      user.role === 'admin' ? 'bg-[#F97316]/10 text-[#F97316]' : 'bg-gray-100 text-gray-600'
+                      user.role === 'admin' ? 'bg-[#FC5424]/10 text-[#FC5424]' : 'bg-gray-100 text-gray-600'
                     }`}>{user.role}</span>
                   </div>
                   <button

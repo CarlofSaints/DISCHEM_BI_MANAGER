@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-oj-orange: #F97316;
-  --color-oj-orange-dark: #EA6A0A;
+  --color-oj-orange: #FC5424;
+  --color-oj-orange-dark: #E34C20;
   --font-sans: Arial, Helvetica, sans-serif;
 }
 
@@ -26,6 +26,6 @@ body {
 }
 
 .input:focus {
-  border-color: #F97316;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  border-color: #FC5424;
+  box-shadow: 0 0 0 3px rgba(252, 84, 36, 0.1);
 }

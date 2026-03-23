@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
           <p className="text-sm text-slate-500 mt-0.5">Manage who can access the Dis-Chem BI Manager portal.</p>
         </div>
         <button onClick={openAdd}
-          className="px-4 py-2 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg transition-colors">
+          className="px-4 py-2 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors">
           + Add User
         </button>
       </div>
@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
                   <td className="p-4 text-slate-600">{u.email}</td>
                   <td className="p-4">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      u.role === 'admin' ? 'bg-[#F97316]/10 text-[#F97316]' : 'bg-gray-100 text-gray-600'
+                      u.role === 'admin' ? 'bg-[#FC5424]/10 text-[#FC5424]' : 'bg-gray-100 text-gray-600'
                     }`}>{u.role}</span>
                   </td>
                   <td className="p-4 text-slate-500 text-xs">{fmtDate(u.firstLoginAt)}</td>
@@ -243,17 +243,17 @@ export default function AdminUsersPage() {
               </select>
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-              <input type="checkbox" className="w-4 h-4 accent-[#F97316]" checked={fForce} onChange={(e) => setFForce(e.target.checked)} />
+              <input type="checkbox" className="w-4 h-4 accent-[#FC5424]" checked={fForce} onChange={(e) => setFForce(e.target.checked)} />
               Force password change on first login
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-              <input type="checkbox" className="w-4 h-4 accent-[#F97316]" checked={fSendEmail} onChange={(e) => setFSendEmail(e.target.checked)} />
+              <input type="checkbox" className="w-4 h-4 accent-[#FC5424]" checked={fSendEmail} onChange={(e) => setFSendEmail(e.target.checked)} />
               Send welcome email with credentials
             </label>
             {fError && <p className="text-red-600 text-xs">{fError}</p>}
             <div className="flex gap-3 pt-2">
               <button onClick={handleAdd} disabled={fSaving}
-                className="flex-1 py-2 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+                className="flex-1 py-2 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg disabled:opacity-50">
                 {fSaving ? 'Creating…' : 'Create User'}
               </button>
               <button onClick={() => setModal(null)}
@@ -289,13 +289,13 @@ export default function AdminUsersPage() {
               </select>
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-              <input type="checkbox" className="w-4 h-4 accent-[#F97316]" checked={fForce} onChange={(e) => setFForce(e.target.checked)} />
+              <input type="checkbox" className="w-4 h-4 accent-[#FC5424]" checked={fForce} onChange={(e) => setFForce(e.target.checked)} />
               Force password change on next login
             </label>
             {fError && <p className="text-red-600 text-xs">{fError}</p>}
             <div className="flex gap-3 pt-2">
               <button onClick={handleEdit} disabled={fSaving}
-                className="flex-1 py-2 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+                className="flex-1 py-2 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg disabled:opacity-50">
                 {fSaving ? 'Saving…' : 'Save Changes'}
               </button>
               <button onClick={() => setModal(null)}

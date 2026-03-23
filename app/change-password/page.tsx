@@ -41,7 +41,7 @@ export default function ChangePasswordPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="bg-[#F97316] px-6 py-4">
+          <div className="bg-[#FC5424] px-6 py-4">
             <h1 className="text-white font-bold text-lg">Change Your Password</h1>
             <p className="text-orange-100 text-xs mt-0.5">A new password is required before you can continue.</p>
           </div>
@@ -87,7 +87,7 @@ export default function ChangePasswordPage() {
             {error && <p className="text-red-600 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
 
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 bg-[#F97316] hover:bg-[#EA6A0A] text-white font-semibold rounded-lg text-sm disabled:opacity-50">
+              className="w-full py-2.5 bg-[#FC5424] hover:bg-[#E34C20] text-white font-semibold rounded-lg text-sm disabled:opacity-50">
               {loading ? 'Saving…' : 'Set New Password'}
             </button>
           </form>

@@ -12,7 +12,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="ml-2 px-2 py-0.5 text-xs rounded border border-slate-300 text-slate-500 hover:border-[#F97316] hover:text-[#F97316] transition-colors"
+      className="ml-2 px-2 py-0.5 text-xs rounded border border-slate-300 text-slate-500 hover:border-[#FC5424] hover:text-[#FC5424] transition-colors"
     >
       {copied ? '✓ Copied' : 'Copy'}
     </button>
@@ -31,7 +31,7 @@ function Code({ children }: { children: string }) {
 function StepBadge({ n, done }: { n: number; done: boolean }) {
   return (
     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-      done ? 'bg-green-500 text-white' : 'bg-[#F97316] text-white'
+      done ? 'bg-green-500 text-white' : 'bg-[#FC5424] text-white'
     }`}>
       {done ? '✓' : n}
     </div>
@@ -178,7 +178,7 @@ export default function BotSetupPage() {
         <button
           onClick={downloadScript}
           disabled={!pathReady}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#F97316] hover:bg-[#EA6A0A] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#FC5424] hover:bg-[#E34C20] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
         >
           <span>↓</span>
           <span>Download setup-dischem-bot.bat</span>
@@ -195,10 +195,10 @@ export default function BotSetupPage() {
           <h2 className="font-semibold text-slate-800">Run the script</h2>
         </div>
         <ol className="text-sm text-slate-600 space-y-2 list-none">
-          <li className="flex gap-2"><span className="font-bold text-[#F97316]">1.</span> Find <strong>setup-dischem-bot.bat</strong> in your Downloads folder.</li>
-          <li className="flex gap-2"><span className="font-bold text-[#F97316]">2.</span> Right-click it → <strong>Run as Administrator</strong>.</li>
-          <li className="flex gap-2"><span className="font-bold text-[#F97316]">3.</span> A black window will open — wait for it to finish (takes about 30 seconds).</li>
-          <li className="flex gap-2"><span className="font-bold text-[#F97316]">4.</span> You should see <em>&quot;Done! The bot is now running in the background.&quot;</em></li>
+          <li className="flex gap-2"><span className="font-bold text-[#FC5424]">1.</span> Find <strong>setup-dischem-bot.bat</strong> in your Downloads folder.</li>
+          <li className="flex gap-2"><span className="font-bold text-[#FC5424]">2.</span> Right-click it → <strong>Run as Administrator</strong>.</li>
+          <li className="flex gap-2"><span className="font-bold text-[#FC5424]">3.</span> A black window will open — wait for it to finish (takes about 30 seconds).</li>
+          <li className="flex gap-2"><span className="font-bold text-[#FC5424]">4.</span> You should see <em>&quot;Done! The bot is now running in the background.&quot;</em></li>
         </ol>
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
           <strong>Important:</strong> The script may print a long command starting with{' '}
@@ -211,7 +211,7 @@ export default function BotSetupPage() {
             type="checkbox"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
-            className="w-4 h-4 accent-[#F97316]"
+            className="w-4 h-4 accent-[#FC5424]"
           />
           <span className="text-sm text-slate-700">I ran the script and saw &quot;Done!&quot;</span>
         </label>
