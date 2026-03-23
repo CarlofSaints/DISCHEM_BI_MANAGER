@@ -127,20 +127,52 @@ export default function BotSetupPage() {
       </div>
 
       {/* Step 1 — prerequisites */}
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
+      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-3">
           <StepBadge n={1} done={false} />
           <h2 className="font-semibold text-slate-800">Before you start</h2>
         </div>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Make sure you have <strong>Node.js</strong> installed on the PC that will run the bot.
-          If you can already run <code className="bg-slate-100 px-1 rounded text-xs">npm run schedule</code>,
-          you&apos;re good — Node.js is installed.
-        </p>
-        <p className="text-sm text-slate-600">
-          Also make sure the bot folder is set up (the <strong>dischem-bot</strong> folder with its{' '}
-          <code className="bg-slate-100 px-1 rounded text-xs">.env</code> file configured).
-        </p>
+
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">1a — Install Node.js</p>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            The bot requires <strong>Node.js</strong>. If you haven&apos;t installed it yet, download and install
+            it from <strong>nodejs.org</strong> (choose the LTS version). Once installed, open a new
+            Command Prompt and run:
+          </p>
+          <Code>node -v</Code>
+          <p className="text-sm text-slate-600">
+            You should see a version number like <code className="bg-slate-100 px-1 rounded text-xs">v22.x.x</code>.
+            If you get an error, Node.js is not installed correctly.
+          </p>
+        </div>
+
+        <div className="border-t border-gray-100 pt-4 space-y-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">1b — Set up the bot folder</p>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            You should have a folder called <strong>dischem-bot</strong> on this PC. Open Command Prompt,
+            navigate into that folder, and install its dependencies:
+          </p>
+          <Code>cd C:\path\to\dischem-bot</Code>
+          <Code>npm install</Code>
+          <p className="text-sm text-slate-600 leading-relaxed mt-1">
+            The folder also needs a <code className="bg-slate-100 px-1 rounded text-xs">.env</code> file
+            with your configuration (API URL, credentials, etc.). Contact your administrator if you don&apos;t have this file.
+          </p>
+        </div>
+
+        <div className="border-t border-gray-100 pt-4 space-y-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">1c — Verify everything works</p>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            From <strong>inside the dischem-bot folder</strong>, run:
+          </p>
+          <Code>npm run schedule</Code>
+          <p className="text-sm text-slate-600">
+            You should see the bot start up and begin listening for schedules.
+            Press <code className="bg-slate-100 px-1 rounded text-xs">Ctrl+C</code> to stop it — this is just a test.
+            If this works, you&apos;re ready for the next step.
+          </p>
+        </div>
       </div>
 
       {/* Step 2 — bot path */}
